@@ -276,11 +276,11 @@ export default function ResetPasswordPage() {
           >
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
               <RefreshCw className="w-6 h-6" />
-            </div>
+        </div>
             <h3 className="text-lg font-semibold mb-2">Easy Recovery</h3>
             <p className="text-sm text-white/80 text-center">Quick and reliable process</p>
           </motion.div>
-        </div>
+      </div>
       </motion.div>
     </div>
   );

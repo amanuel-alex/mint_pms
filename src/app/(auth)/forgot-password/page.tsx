@@ -207,11 +207,11 @@ export default function ForgotPasswordPage() {
           >
             <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
               <RefreshCw className="w-6 h-6" />
-            </div>
+        </div>
             <h3 className="text-lg font-semibold mb-2">Fast Recovery</h3>
             <p className="text-sm text-white/80 text-center">Get back in quickly</p>
           </motion.div>
-        </div>
+      </div>
       </motion.div>
     </div>
   );

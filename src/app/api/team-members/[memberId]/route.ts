@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/lib/serverAuth";
 
 export async function PUT(
   request: Request,
-  { params }: { params: { memberId: string } }
+  { params }: { params: Promise<{ memberId: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -26,21 +26,39 @@ export async function PUT(
       );
     }
 
-    // Verify the team member belongs to a project managed by this user
-    const teamMember = await prisma.user.findFirst({
-      where: {
-        id: params.memberId,
-        teams: {
-          some: {
-            projects: {
-              some: {
-                holderId: user.id
+    const { memberId } = await params;
+
+    // Verify authorization:
+    // - ADMIN can edit any team member
+    // - PROJECT_MANAGER can edit members in their teams or members with tasks in their projects
+    let teamMember = null as any;
+    if (user.role === "ADMIN") {
+      teamMember = await prisma.user.findUnique({ where: { id: memberId } });
+    } else {
+      teamMember = await prisma.user.findFirst({
+        where: {
+          id: memberId,
+          OR: [
+            {
+              teams: {
+                some: {
+                  projects: {
+                    some: { holderId: user.id }
+                  }
+                }
+              }
+            },
+            {
+              assignedTasks: {
+                some: {
+                  project: { holderId: user.id }
+                }
               }
             }
-          }
+          ]
         }
-      }
-    });
+      });
+    }
 
     if (!teamMember) {
       return NextResponse.json(
@@ -52,7 +70,7 @@ export async function PUT(
     // Update the team member's full name
     const updatedMember = await prisma.user.update({
       where: {
-        id: params.memberId
+        id: memberId
       },
       data: {
         fullName
@@ -76,7 +94,7 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { memberId: string } }
+  { params }: { params: Promise<{ memberId: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -88,7 +106,7 @@ export async function DELETE(
       );
     }
 
-    const memberId = params.memberId;
+    const { memberId } = await params;
     console.log("Attempting to delete team member:", memberId);
 
     // Verify the team member exists and is a team member

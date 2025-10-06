@@ -21,6 +21,7 @@ export default function SubmitFinalReportPage() {
   const [success, setSuccess] = useState(false);
   const [allCompleted, setAllCompleted] = useState(false);
   const [checkingTasks, setCheckingTasks] = useState(false);
+  const [incompleteTasks, setIncompleteTasks] = useState<any[]>([]);
 
   // Fetch projects and admins on mount
   useEffect(() => {
@@ -47,6 +48,7 @@ export default function SubmitFinalReportPage() {
         .then((res) => res.json())
         .then((data) => {
           setAllCompleted(!!data.allCompleted);
+          setIncompleteTasks(Array.isArray(data.incompleteTasks) ? data.incompleteTasks : []);
         })
         .catch(() => setAllCompleted(false))
         .finally(() => setCheckingTasks(false));
@@ -190,7 +192,14 @@ export default function SubmitFinalReportPage() {
             <div className="text-blue-500 text-sm">Checking if all tasks are completed...</div>
           )}
           {selectedProject && !checkingTasks && !allCompleted && (
-            <div className="text-red-500 text-sm">All tasks in this project must be completed before submitting the final report.</div>
+            <div className="text-red-500 text-sm space-y-1">
+              <div>All tasks in this project must be completed before submitting the final report.</div>
+              {incompleteTasks.length > 0 && (
+                <div className="text-xs text-red-400">
+                  Remaining: {incompleteTasks.map((t: any) => `${t.title} (${t.status})`).join(", ")}
+                </div>
+              )}
+            </div>
           )}
           {error && <div className="text-red-500 text-sm">{error}</div>}
           <div className="flex gap-2">

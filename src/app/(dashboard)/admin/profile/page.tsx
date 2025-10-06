@@ -314,7 +314,7 @@ export default function ProfileSettings() {
               </Button>
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button type="button" variant="outline" className="flex-1 h-11 text-base">Change Email</Button>
+                      <Button type="button" variant="outline" className="flex-1  h-11 text-base">Change Email</Button>
                     </DialogTrigger>
                     <DialogContent className="w-[calc(100%-2rem)] sm:max-w-md">
                       <DialogHeader>

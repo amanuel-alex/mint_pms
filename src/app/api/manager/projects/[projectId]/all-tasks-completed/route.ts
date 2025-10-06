@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/serverAuth";
+import { TaskStatus } from "@prisma/client";
 
 export async function GET(request: Request, context: { params: { projectId: string } }) {
   const user = await getCurrentUser();
@@ -18,10 +19,18 @@ export async function GET(request: Request, context: { params: { projectId: stri
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // Count tasks that are not completed
-  const incompleteCount = await prisma.task.count({
-    where: { projectId, status: { not: "COMPLETED" } },
+  // Fetch incomplete tasks (treat COMPLETED, CANCELLED, REVIEW, and BLOCKED as acceptable)
+  // Define acceptable statuses for final report
+  const acceptableStatuses = [TaskStatus.COMPLETED, TaskStatus.REVIEW, TaskStatus.BLOCKED];
+
+  const incompleteTasks = await prisma.task.findMany({
+    where: { projectId, status: { notIn: acceptableStatuses } },
+    select: { id: true, title: true, status: true },
+    orderBy: { createdAt: 'asc' },
   });
 
-  return NextResponse.json({ allCompleted: incompleteCount === 0 });
+  return NextResponse.json({
+    allCompleted: incompleteTasks.length === 0,
+    incompleteTasks,
+  });
 } 

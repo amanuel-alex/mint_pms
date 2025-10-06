@@ -111,10 +111,24 @@ export default function MyTasksPage() {
   const selectAll = () => setSelectedIds(filteredTasks.map((t) => t.id));
   const clearSelection = () => setSelectedIds([]);
   const handleBulkComplete = async () => {
-    // Simulate API call
-    setTasks((prev) => prev.map((t) => selectedIds.includes(t.id) ? { ...t, status: "COMPLETED" } : t));
-    setSelectedIds([]);
-    toast.success("Selected tasks marked as complete");
+    try {
+      await Promise.all(
+        selectedIds.map((id) =>
+          fetch(`/api/team-member/tasks/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status: "COMPLETED" }),
+          }).then((res) => {
+            if (!res.ok) throw new Error("Failed to update task");
+          })
+        )
+      );
+      setTasks((prev) => prev.map((t) => selectedIds.includes(t.id) ? { ...t, status: "COMPLETED" } : t));
+      setSelectedIds([]);
+      toast.success("Selected tasks marked as complete");
+    } catch (err) {
+      toast.error("Failed to update one or more tasks");
+    }
   };
   const handleDirectComplete = async (id: string) => {
     try {
@@ -130,9 +144,19 @@ export default function MyTasksPage() {
       toast.error("Failed to mark task as complete");
     }
   };
-  const handleDirectStart = (id: string) => {
-    setTasks((prev) => prev.map((t) => t.id === id ? { ...t, status: "IN_PROGRESS" } : t));
-    toast.success("Task started");
+  const handleDirectStart = async (id: string) => {
+    try {
+      const res = await fetch(`/api/team-member/tasks/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "IN_PROGRESS" }),
+      });
+      if (!res.ok) throw new Error("Failed to update task");
+      setTasks((prev) => prev.map((t) => t.id === id ? { ...t, status: "IN_PROGRESS" } : t));
+      toast.success("Task started");
+    } catch (err) {
+      toast.error("Failed to start task");
+    }
   };
 
   if (loading) {
