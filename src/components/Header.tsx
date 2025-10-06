@@ -74,6 +74,20 @@ export default function Header({ onToggleSidebar, user }: HeaderProps) {
     }
   };
 
+  // Get settings path based on user role
+  const getSettingsPath = () => {
+    switch (user.role) {
+      case "ADMIN":
+        return "/admin/settings";
+      case "PROJECT_MANAGER":
+        return "/project-manager/settings";
+      case "TEAM_MEMBER":
+        return "/team-member/settings";
+      default:
+        return "/settings";
+    }
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 0);
@@ -272,7 +286,7 @@ export default function Header({ onToggleSidebar, user }: HeaderProps) {
 
                     <button
                       onClick={() => {
-                        router.push("settings");
+                        router.push(getSettingsPath());
                         setShowProfileMenu(false);
                       }}
                       className="w-full px-4 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-3 transition-colors duration-150 cursor-pointer"

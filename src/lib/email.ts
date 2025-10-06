@@ -21,7 +21,7 @@ export const sendEmail = async ({
 }) => {
   try {
     await transporter.sendMail({
-      from: process.env.SMTP_FROM || '"MinT System" <noreply@mint.com>',
+      from: process.env.SMTP_FROM || '"MinT System" <banadawithunde@mgmail.com>',
       to,
       subject,
       html,

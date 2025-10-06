@@ -57,8 +57,12 @@ export async function POST(req: Request) {
       },
     });
 
-    // Create reset URL
-    const resetUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${resetToken}`;
+    // Create reset URL with sensible fallback for local/dev
+    const originHeader = req.headers.get("origin");
+    const requestUrl = new URL(req.url);
+    const fallbackOrigin = `${requestUrl.protocol}//${requestUrl.host}`;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || originHeader || fallbackOrigin;
+    const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
     const createVerificationEmailTemplate = (
       name: string,
       verificationLink: string,
