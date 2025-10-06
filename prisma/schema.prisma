@@ -1,0 +1,255 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                       String         @id @default(cuid())
+  fullName                 String
+  email                    String         @unique
+  password                 String?        // Make nullable for pending activation
+  role                     Role           @default(PROJECT_MANAGER)
+  status                   UserStatus     @default(PENDING_ACTIVATION)  // Add this
+  createdAt                DateTime       @default(now())
+  emailVerified            DateTime?
+  updatedAt                DateTime       @default(now()) @updatedAt
+  verificationToken        String?
+  verificationTokenExpires DateTime?
+  profileImageUrl          String?
+  
+  // New activation fields
+  activationToken          String?        @unique
+  activationTokenExpires   DateTime?
+  activationAttempts       Int            @default(0)
+  lastActivationAttempt    DateTime?
+  activatedAt              DateTime?
+  createdBy                String?        // Who created this user
+  
+  comments                 Comment[]
+  receivedMessages         Message[]      @relation("ReceivedMessages")
+  sentMessages             Message[]      @relation("SentMessages")
+  notifications            Notification[] @relation("UserNotifications")
+  projectsManaged          Project[]      @relation("ProjectManager")
+  receivedReports          Report[]       @relation("ReceivedReports")
+  sentReports              Report[]       @relation("SentReports")
+  assignedTasks            Task[]         @relation("AssignedTasks")
+  teams                    Team[]         @relation("TeamMembers")
+}
+
+model Project {
+  id            String         @id @default(uuid())
+  name          String
+  description   String?
+  createdAt     DateTime       @default(now())
+  dueDate       DateTime?
+  budget        String?
+  status        ProjectStatus  @default(PLANNED)
+  updatedAt     DateTime       @default(now()) @updatedAt
+  holderId      String?
+  fileName      String?
+  fileUrl       String?
+  budgets       Budget[]
+  notifications Notification[] @relation("ProjectNotifications")
+  holder        User?          @relation("ProjectManager", fields: [holderId], references: [id])
+  tasks         Task[]
+  teams         Team[]         @relation("TeamProjects")
+}
+
+model SystemSettings {
+  id        String   @id @default(cuid())
+  settings  Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Team {
+  id        String    @id @default(cuid())
+  name      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  members   User[]    @relation("TeamMembers")
+  projects  Project[] @relation("TeamProjects")
+}
+
+model Budget {
+  id         String       @id @default(uuid())
+  projectId  String
+  department String
+  date       DateTime
+  status     BudgetStatus
+  allocation Float
+  expenses   Float
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @default(now()) @updatedAt
+  project    Project      @relation(fields: [projectId], references: [id])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  type      NotificationType
+  message   String
+  isRead    Boolean          @default(false)
+  userId    String
+  projectId String
+  createdAt DateTime         @default(now())
+  project   Project          @relation("ProjectNotifications", fields: [projectId], references: [id])
+  user      User             @relation("UserNotifications", fields: [userId], references: [id])
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  email     String
+  expires   DateTime
+  createdAt DateTime @default(now())
+  used      Boolean  @default(false)
+}
+
+model Task {
+  id           String       @id @default(cuid())
+  title        String
+  description  String?
+  status       TaskStatus   @default(TODO)
+  priority     Priority     @default(MEDIUM)
+  deadline     DateTime?
+  projectId    String
+  assignedToId String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @default(now()) @updatedAt
+  attachments  Attachment[]
+  comments     Comment[]
+  Report       Report[]
+  assignedTo   User?        @relation("AssignedTasks", fields: [assignedToId], references: [id])
+  project      Project      @relation(fields: [projectId], references: [id])
+  labels       Label[]      @relation("LabelToTask")
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  taskId    String
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  author    User     @relation(fields: [authorId], references: [id])
+  task      Task     @relation(fields: [taskId], references: [id])
+}
+
+model Attachment {
+  id         String   @id @default(cuid())
+  fileName   String
+  fileUrl    String
+  taskId     String
+  uploadedBy String
+  createdAt  DateTime @default(now())
+  task       Task     @relation(fields: [taskId], references: [id])
+}
+
+model Label {
+  id        String   @id @default(cuid())
+  name      String
+  color     String
+  createdAt DateTime @default(now())
+  tasks     Task[]   @relation("LabelToTask")
+}
+
+model Report {
+  id          String       @id @default(cuid())
+  title       String
+  description String?
+  fileUrl     String
+  fileName    String
+  fileType    String
+  status      ReportStatus @default(PENDING)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  senderId    String
+  recipientId String
+  taskId      String?      @db.VarChar(191)
+  recipient   User         @relation("ReceivedReports", fields: [recipientId], references: [id], onDelete: Cascade)
+  sender      User         @relation("SentReports", fields: [senderId], references: [id], onDelete: Cascade)
+  Task        Task?        @relation(fields: [taskId], references: [id], onUpdate: NoAction)
+
+  @@index([senderId])
+  @@index([recipientId])
+}
+
+model Message {
+  id          String   @id @default(cuid())
+  content     String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  senderId    String
+  recipientId String
+  recipient   User     @relation("ReceivedMessages", fields: [recipientId], references: [id], onDelete: Cascade)
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([senderId])
+  @@index([recipientId])
+}
+
+enum Role {
+  ADMIN
+  PROJECT_MANAGER
+  TEAM_MEMBER
+}
+
+enum ProjectStatus {
+  PLANNED
+  ACTIVE
+  CANCELLED
+  COMPLETED
+  IN_PROGRESS
+  ON_HOLD
+}
+
+enum NotificationType {
+  PROJECT_CREATED
+  PROJECT_UPDATED
+  PROJECT_DELETED
+  PROJECT_STATUS_CHANGED
+  PROJECT_ASSIGNED
+  TASK_CREATED
+  TASK_UPDATED
+  TASK_DELETED
+  TASK_STATUS_CHANGED
+  TASK_ASSIGNED
+}
+
+enum BudgetStatus {
+  Pending
+  Approved
+  Rejected
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  COMPLETED
+  BLOCKED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum ReportStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum UserStatus {
+  PENDING_ACTIVATION
+  ACTIVE
+  SUSPENDED
+  DEACTIVATED
+}
