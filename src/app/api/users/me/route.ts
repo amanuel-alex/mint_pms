@@ -36,13 +36,19 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
     const body = await request.json();
-    const { fullName, email, profileImageUrl } = body;
-    if (!fullName || !email) {
-      return NextResponse.json({ error: "Full name and email are required" }, { status: 400 });
+    const { fullName, profileImageUrl } = body;
+    if (!fullName) {
+      return NextResponse.json({ error: "Full name is required" }, { status: 400 });
     }
+
+    const updateData: any = { fullName };
+    if (typeof profileImageUrl === 'string') {
+      updateData.profileImageUrl = profileImageUrl;
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
-      data: { fullName, email, profileImageUrl },
+      data: updateData,
       select: {
         fullName: true,
         email: true,

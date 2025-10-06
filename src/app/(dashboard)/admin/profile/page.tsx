@@ -12,13 +12,14 @@ import { cn } from '@/lib/utils';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Card } from '@/components/ui/card';
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from '@/components/ui/avatar';
-import UserPreferences from '@/components/UserPreferences';
+// import UserPreferences from '@/components/UserPreferences';
 
 const profileSchema = z.object({
   name: z.string().min(2, 'Name is too short'),
@@ -36,13 +37,34 @@ const passwordSchema = z
     path: ['confirmPassword'],
   });
 
+type ProfileState = {
+  fullName?: string;
+  email?: string;
+  role?: string;
+  profileImageUrl?: string;
+  createdAt?: string | Date;
+  updatedAt?: string | Date;
+};
+
 export default function ProfileSettings() {
-  const [profile, setProfile] = useState<any>(null);
+  const [profile, setProfile] = useState<ProfileState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [newEmail, setNewEmail] = useState<string>("");
+
+  // Profile state (init with empty defaults, then reset after fetch)
+  const {
+    register: registerProfile,
+    handleSubmit: handleProfileSubmit,
+    reset: resetProfile,
+    formState: { errors: profileErrors },
+  } = useForm<z.infer<typeof profileSchema>>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: { name: "", email: "" },
+  });
 
   // Fetch admin profile on mount
   useEffect(() => {
@@ -62,18 +84,7 @@ export default function ProfileSettings() {
         setError(err.message);
         setLoading(false);
       });
-  }, []);
-
-  // Profile state
-  const {
-    register: registerProfile,
-    handleSubmit: handleProfileSubmit,
-    reset: resetProfile,
-    formState: { errors: profileErrors, isSubmitting: isSubmittingProfile },
-  } = useForm<z.infer<typeof profileSchema>>({
-    resolver: zodResolver(profileSchema),
-    defaultValues: profile,
-  });
+  }, [resetProfile]);
 
   // Password state
   const {
@@ -89,9 +100,9 @@ export default function ProfileSettings() {
   const [preview, setPreview] = useState<string | null>(null);
 
   // Password visibility toggles
-  const [showCurrent, setShowCurrent] = useState(false);
-  const [showNew, setShowNew] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
+  const [showCurrent] = useState(false);
+  const [showNew] = useState(false);
+  const [showConfirm] = useState(false);
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -145,7 +156,6 @@ export default function ProfileSettings() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           fullName: data.name,
-          email: data.email,
           profileImageUrl: imageUrl,
         }),
       });
@@ -153,9 +163,10 @@ export default function ProfileSettings() {
       if (!res.ok) throw new Error(result.error || 'Failed to update profile');
       setProfile(result.user);
       toast.success('Profile updated!');
-    } catch (err: any) {
-      setError(err.message);
-      toast.error(err.message);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to update profile';
+      setError(message);
+      toast.error(message);
       setUploading(false);
     } finally {
       setSaving(false);
@@ -183,8 +194,9 @@ export default function ProfileSettings() {
 
       toast.success('🔒 Password updated successfully!');
       resetPassword();
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update password. Please try again.');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to update password. Please try again.';
+      toast.error(message);
     }
   };
 
@@ -275,7 +287,7 @@ export default function ProfileSettings() {
             </div>
             <div>
                   <Label className="text-xs text-gray-500">Email Address</Label>
-                  <Input id="email" type="email" {...registerProfile('email')} placeholder="you@example.com" className="mt-1" />
+                  <Input id="email" type="email" {...registerProfile('email')} placeholder="you@example.com" className="mt-1" disabled readOnly />
               {profileErrors.email && (
                 <p className="text-sm text-red-500 mt-1">{profileErrors.email.message}</p>
               )}
@@ -292,14 +304,45 @@ export default function ProfileSettings() {
                   <Label className="text-xs text-gray-500">Last Updated</Label>
                   <div className="text-gray-700 mt-1">{profile?.updatedAt ? new Date(profile.updatedAt).toLocaleDateString() : ''}</div>
                 </div>
-                <div className="col-span-2 flex gap-4 mt-4">
+                <div className="col-span-2 flex items-center gap-3 mt-4">
                   <Button type="submit" className="flex-1 h-11 text-base flex items-center justify-center gap-2" disabled={saving}>
                     {saving && <Loader2 className="animate-spin w-5 h-5" />}
                     {saving ? 'Saving...' : 'Save Changes'}
               </Button>
-                  <Button type="button" variant="outline" className="flex-1 h-11 text-base" onClick={() => resetProfile(profile)} disabled={saving}>
+                  <Button type="button" variant="outline" className="flex-1 h-11 text-base" onClick={() => resetProfile(profile ? { name: profile.fullName || '', email: profile.email || '' } : undefined)} disabled={saving}>
                 Cancel
               </Button>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button type="button" variant="outline" className="flex-1 h-11 text-base">Change Email</Button>
+                    </DialogTrigger>
+                    <DialogContent className="w-[calc(100%-2rem)] sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Change Email</DialogTitle>
+                        <DialogDescription>Enter your new email address. We will send a confirmation link.</DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-2">
+                        <Label htmlFor="newEmail">New Email</Label>
+                        <Input id="newEmail" type="email" placeholder="you@example.com" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} className="w-full" />
+                      </div>
+                      <DialogFooter>
+                        <Button type="button" onClick={async () => {
+                          if (!newEmail) { toast.error('Please enter a new email'); return; }
+                          const res = await fetch('/api/users/me/change-email/request', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ newEmail })
+                          });
+                          const data = await res.json();
+                          if (res.ok) {
+                            toast.success('Confirmation sent to new email. Check your inbox.');
+                          } else {
+                            toast.error(data.error || 'Failed to request email change');
+                          }
+                        }}>Send Confirmation</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
                 </div>
             </div>
           </form>
