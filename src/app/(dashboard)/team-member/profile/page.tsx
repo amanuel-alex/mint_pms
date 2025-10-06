@@ -274,17 +274,17 @@ export default function TeamMemberProfile() {
                   <Label className="text-xs text-gray-500">Last Updated</Label>
                   <div className="text-gray-700 mt-1">{profile?.updatedAt ? new Date(profile.updatedAt).toLocaleDateString() : ''}</div>
                 </div>
-                <div className="col-span-2 flex items-center gap-3 mt-4">
-                  <Button type="submit" className="flex-1 h-11 text-base flex items-center justify-center gap-2" disabled={saving}>
+                <div className="col-span-2 min-w-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 mt-4">
+                  <Button type="submit" className="w-full sm:flex-1 h-auto sm:h-11 py-2 text-sm sm:text-base max-w-full flex items-center justify-center gap-2 whitespace-normal break-words" disabled={saving}>
                     {saving && <Loader2 className="animate-spin w-5 h-5" />}
                     {saving ? 'Saving...' : 'Save Changes'}
               </Button>
-                  <Button type="button" variant="outline" className="flex-1 h-11 text-base" onClick={() => resetProfile(profile)} disabled={saving}>
+                  <Button type="button" variant="outline" className="w-full sm:flex-1 h-auto sm:h-11 py-2 text-sm sm:text-base max-w-full flex items-center justify-center whitespace-normal break-words" onClick={() => resetProfile(profile)} disabled={saving}>
                 Cancel
               </Button>
                   <Dialog>
                     <DialogTrigger asChild>
-                      <Button type="button" variant="outline" className="flex-1 h-11 text-base">Change Email</Button>
+                      <Button type="button" variant="outline" className="w-full sm:flex-1 h-auto sm:h-11 py-2 text-sm sm:text-base max-w-full flex items-center justify-center whitespace-normal break-words">Change Email</Button>
                     </DialogTrigger>
                     <DialogContent className="w-[calc(100%-2rem)] sm:max-w-md">
                       <DialogHeader>
