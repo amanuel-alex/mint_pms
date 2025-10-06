@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
+import { KeyRound, ShieldCheck, Lock, RefreshCw } from "lucide-react";
 
 export default function ForgotPasswordPage() {
   const searchParams = useSearchParams();
@@ -148,24 +150,69 @@ export default function ForgotPasswordPage() {
           )}
         </div>
       </div>
-      {/* Right side - Video Background */}
-      <div className="w-full md:w-1/2 hidden md:block relative min-h-[50vh] md:min-h-screen">
-        <div className="absolute inset-0 bg-[#087684]/40 z-10"></div>{" "}
-        {/* 40% opacity teal */}
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute w-full h-full object-cover"
-        >
-          <source src="/forgot.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute bottom-8 left-8 z-20 text-white">
-          <h2 className="text-2xl font-bold">Project MS</h2>
-          <p className="mt-1 text-white/80">Your productivity companion</p>
+      {/* Right side - Decorative grid (mirrors login style, tailored for reset) */}
+      <motion.div 
+        initial={{ opacity: 0, x: 50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full md:w-1/2 hidden md:block relative min-h-[50vh] md:min-h-screen overflow-hidden"
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-[#087684]/40 to-[#065462]/40 z-10"></div>
+
+        <div className="absolute inset-0 grid grid-cols-2 gap-8 p-12 z-20">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 flex flex-col items-center text-white"
+          >
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
+              <KeyRound className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Reset Link</h3>
+            <p className="text-sm text-white/80 text-center">We’ll email you a secure link</p>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 flex flex-col items-center text-white"
+          >
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Verified</h3>
+            <p className="text-sm text-white/80 text-center">Links expire after 1 hour</p>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 flex flex-col items-center text-white"
+          >
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
+              <Lock className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Privacy</h3>
+            <p className="text-sm text-white/80 text-center">We never share your data</p>
+          </motion.div>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 flex flex-col items-center text-white"
+          >
+            <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center mb-4">
+              <RefreshCw className="w-6 h-6" />
+            </div>
+            <h3 className="text-lg font-semibold mb-2">Fast Recovery</h3>
+            <p className="text-sm text-white/80 text-center">Get back in quickly</p>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
