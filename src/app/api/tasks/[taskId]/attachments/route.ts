@@ -6,7 +6,7 @@ import path from "path";
 
 export async function GET(
   request: Request,
-  { params }: { params: { taskId: string } }
+  { params }: { params: Promise<{ taskId: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -14,7 +14,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { taskId } = params;
+    const { taskId } = await params;
 
     const attachments = await prisma.attachment.findMany({
       where: {
@@ -37,7 +37,7 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: { taskId: string } }
+  { params }: { params: Promise<{ taskId: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -45,7 +45,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { taskId } = params;
+    const { taskId } = await params;
 
     // Verify task exists
     const task = await prisma.task.findUnique({
@@ -106,7 +106,7 @@ export async function POST(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { taskId: string } }
+  { params }: { params: Promise<{ taskId: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -114,7 +114,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { taskId } = params;
+    const { taskId } = await params;
     const { searchParams } = new URL(request.url);
     const attachmentId = searchParams.get("attachmentId");
 

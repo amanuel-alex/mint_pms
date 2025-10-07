@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/lib/auth";
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { taskId: string; attachmentId: string } }
+  { params }: { params: Promise<{ taskId: string; attachmentId: string }> }
 ) {
   try {
     const user = await getCurrentUser();
@@ -12,7 +12,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { taskId, attachmentId } = params;
+    const { taskId, attachmentId } = await params;
 
     // Verify attachment exists
     const attachment = await prisma.attachment.findUnique({

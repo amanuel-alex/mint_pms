@@ -71,7 +71,7 @@ export async function GET() {
 
 async function calculateStreak(userId: string): Promise<number> {
   let streak = 0;
-  let day = new Date();
+  const day = new Date();
   
   for (let i = 0; i < 7; i++) {
     const start = new Date(day);

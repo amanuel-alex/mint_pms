@@ -27,7 +27,7 @@ export default function CreateProjectManagerPage() {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
-    role: "PROJECT_MANAGER" as "PROJECT_MANAGER",
+    role: "PROJECT_MANAGER" as const,
     assignedProjects: [] as string[],
   });
 

@@ -3,7 +3,7 @@ import prisma from '@/lib/prisma';
 
 export async function POST(
   request: Request,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {
     const body = await request.json();
@@ -14,7 +14,7 @@ export async function POST(
       );
     }
 
-    const projectId = params.projectId;
+    const { projectId } = await params;
     if (!projectId) {
       return NextResponse.json(
         { error: 'projectId is required' },
@@ -107,10 +107,10 @@ export async function POST(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { projectId: string; memberId: string } }
+  { params }: { params: Promise<{ projectId: string; memberId: string }> }
 ) {
   try {
-    const { projectId, memberId } = params;
+    const { projectId, memberId } = await params;
 
     // Find the team associated with this project
     const team = await prisma.team.findFirst({

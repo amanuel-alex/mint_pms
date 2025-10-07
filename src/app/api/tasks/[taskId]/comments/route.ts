@@ -4,15 +4,14 @@ import { getCurrentUser } from '@/lib/auth';
 
 export async function GET(
   request: Request,
-  { params }: { params: { taskId: string } }
+  { params }: { params: Promise<{ taskId: string }> }
 ) {
   try {
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const { taskId } = params;
+    const { taskId } = await params;
 
     const comments = await prisma.comment.findMany({
       where: {
@@ -43,15 +42,14 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: { taskId: string } }
+  { params }: { params: Promise<{ taskId: string }> }
 ) {
   try {
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const { taskId } = params;
+    const { taskId } = await params;
     const body = await request.json();
     const { content } = body;
 

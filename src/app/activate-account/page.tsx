@@ -29,7 +29,7 @@ export default function ActivateAccountPage() {
 
   const checkPasswordStrength = (password: string) => {
     let score = 0;
-    let feedback = [];
+    const feedback = [];
 
     if (password.length >= 8) score++;
     else feedback.push("At least 8 characters");

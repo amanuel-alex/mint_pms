@@ -3,11 +3,12 @@ import prisma from "@/lib/prisma";
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     // Validate the notification ID
-    if (!params.id) {
+    if (!id) {
       return NextResponse.json(
         { error: "Notification ID is required" },
         { status: 400 }
@@ -17,7 +18,7 @@ export async function DELETE(
     // Check if notification exists
     const notification = await prisma.notification.findUnique({
       where: {
-        id: params.id
+        id
       }
     });
 
@@ -31,7 +32,7 @@ export async function DELETE(
     // Delete the notification
     await prisma.notification.delete({
       where: {
-        id: params.id
+        id
       }
     });
 

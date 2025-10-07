@@ -4,7 +4,7 @@ import { ProjectStatus } from "@prisma/client";
 
 export async function PUT(
   request: Request,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {
     const body = await request.json();
@@ -31,9 +31,11 @@ export async function PUT(
     }
 
     // Update the project with holder ID
+    const { projectId } = await params;
+
     const project = await prisma.project.update({
       where: {
-        id: params.projectId
+        id: projectId
       },
       data: {
         name,
@@ -62,7 +64,7 @@ export async function PUT(
 // PATCH: Partial update (e.g., budget only)
 export async function PATCH(
   request: Request,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {
     const body = await request.json();
@@ -98,9 +100,11 @@ export async function PATCH(
     if (description !== undefined) updateData.description = description || null;
 
     // Update the project
+    const { projectId } = await params;
+
     const project = await prisma.project.update({
       where: {
-        id: params.projectId
+        id: projectId
       },
       data: updateData,
       include: {
@@ -130,11 +134,12 @@ export async function PATCH(
 
 export async function GET(
   request: Request,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {
+    const { projectId } = await params;
     const project = await prisma.project.findUnique({
-      where: { id: params.projectId },
+      where: { id: projectId },
     });
     if (!project) {
       return NextResponse.json(
@@ -154,16 +159,17 @@ export async function GET(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { projectId: string } }
+  { params }: { params: Promise<{ projectId: string }> }
 ) {
   try {
+    const { projectId } = await params;
     // Delete related notifications first
     await prisma.notification.deleteMany({
-      where: { projectId: params.projectId },
+      where: { projectId },
     });
     // Now delete the project
     await prisma.project.delete({
-      where: { id: params.projectId },
+      where: { id: projectId },
     });
     return NextResponse.json({ message: "Project deleted" });
   } catch (error) {

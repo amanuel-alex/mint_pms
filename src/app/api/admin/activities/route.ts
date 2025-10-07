@@ -26,7 +26,7 @@ export async function GET() {
     // Format the activities
     const formattedActivities = activities.map(activity => {
       let title = '';
-      let status = 'completed';
+      const status = 'completed';
 
       switch (activity.type) {
         case 'PROJECT_CREATED':

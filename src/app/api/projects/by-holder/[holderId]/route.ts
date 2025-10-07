@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/lib/serverAuth";
 
 export async function GET(
   request: Request,
-  { params }: { params: { holderId: string } }
+  { params }: { params: Promise<{ holderId: string }> }
 ) {
   try {
     const currentUser = await getCurrentUser();
