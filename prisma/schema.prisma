@@ -11,24 +11,21 @@ model User {
   id                       String         @id @default(cuid())
   fullName                 String
   email                    String         @unique
-  password                 String?        // Make nullable for pending activation
+  password                 String?
   role                     Role           @default(PROJECT_MANAGER)
-  status                   UserStatus     @default(PENDING_ACTIVATION)  // Add this
+  status                   UserStatus     @default(PENDING_ACTIVATION)
   createdAt                DateTime       @default(now())
   emailVerified            DateTime?
   updatedAt                DateTime       @default(now()) @updatedAt
   verificationToken        String?
   verificationTokenExpires DateTime?
   profileImageUrl          String?
-  
-  // New activation fields
   activationToken          String?        @unique
   activationTokenExpires   DateTime?
   activationAttempts       Int            @default(0)
   lastActivationAttempt    DateTime?
   activatedAt              DateTime?
-  createdBy                String?        // Who created this user
-  
+  createdBy                String?
   comments                 Comment[]
   receivedMessages         Message[]      @relation("ReceivedMessages")
   sentMessages             Message[]      @relation("SentMessages")

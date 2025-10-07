@@ -314,11 +314,7 @@ export default function ProfileSettings() {
               </Button>
                   <Dialog>
                     <DialogTrigger asChild>
-
-                      <Button type="button" variant="outline" className="flex-1  h-11 text-base">Change Email</Button>
-
                       <Button type="button" variant="outline" className="w-full sm:flex-1 h-auto sm:h-11 py-2 text-sm sm:text-base max-w-full flex items-center justify-center whitespace-normal break-words">Change Email</Button>
-
                     </DialogTrigger>
                     <DialogContent className="w-[calc(100%-2rem)] sm:max-w-md">
                       <DialogHeader>
