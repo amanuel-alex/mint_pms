@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 import toast, { Toaster } from 'react-hot-toast';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -47,6 +48,7 @@ type ProfileState = {
 };
 
 export default function ProfileSettings() {
+  const router = useRouter();
   const [profile, setProfile] = useState<ProfileState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -309,7 +311,7 @@ export default function ProfileSettings() {
                     {saving && <Loader2 className="animate-spin w-5 h-5" />}
                     {saving ? 'Saving...' : 'Save Changes'}
               </Button>
-                  <Button type="button" variant="outline" className="w-full sm:flex-1 h-auto sm:h-11 py-2 text-sm sm:text-base max-w-full flex items-center justify-center whitespace-normal break-words" onClick={() => resetProfile(profile ? { name: profile.fullName || '', email: profile.email || '' } : undefined)} disabled={saving}>
+                  <Button type="button" variant="outline" className="w-full sm:flex-1 h-auto sm:h-11 py-2 text-sm sm:text-base max-w-full flex items-center justify-center whitespace-normal break-words" onClick={() => router.push('/admin')} disabled={saving}>
                 Cancel
               </Button>
                   <Dialog>
@@ -376,7 +378,7 @@ export default function ProfileSettings() {
                     {isSubmittingPassword ? <Loader2 className="animate-spin w-5 h-5 mr-2" /> : null}
                     {isSubmittingPassword ? 'Saving...' : 'Change Password'}
               </Button>
-                  <Button type="button" variant="outline" className="flex-1 h-11 text-base" onClick={() => resetPassword()} disabled={isSubmittingPassword}>
+                  <Button type="button" variant="outline" className="flex-1 h-11 text-base" onClick={() => router.push('/admin')} disabled={isSubmittingPassword}>
                 Cancel
               </Button>
             </div>

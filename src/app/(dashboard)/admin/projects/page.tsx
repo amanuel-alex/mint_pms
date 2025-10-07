@@ -69,6 +69,7 @@ export default function Projects() {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
   const [selectedManager, setSelectedManager] = useState<string>('');
   const [newProject, setNewProject] = useState<Partial<Project>>({
     name: '',
@@ -680,17 +681,29 @@ export default function Projects() {
             filteredProjects.map((project) => (
               <div
                 key={project.id}
-                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer border border-gray-100"
+                className="relative overflow-hidden rounded-xl border border-gray-200 bg-white p-6 shadow-sm transition-all duration-200 hover:shadow-md hover:ring-1 hover:ring-gray-200 cursor-pointer"
                 onClick={() => {
                   setSelectedProject(project);
                   setIsEditMode(false);
                   setIsDetailsOpen(true);
                 }}
               >
-                <div className="p-6  bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700">
+                {/* Status accent bar */}
+                <span
+                  className={`absolute left-0 top-0 h-full w-1 ${
+                    project.status === 'ACTIVE'
+                      ? 'bg-green-500'
+                      : project.status === 'PLANNED'
+                        ? 'bg-indigo-500'
+                        : project.status === 'CANCELLED'
+                          ? 'bg-rose-500'
+                          : 'bg-emerald-500'
+                  }`}
+                />
+                <div className="p-0 bg-transparent border-0 rounded-lg shadow-none dark:bg-transparent dark:border-0">
                   <div className="flex justify-between items-start mb-4">
                     <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                      <ClipboardList className="w-5 h-5 text-gray-500" />
+                      <ClipboardList className="w-5 h-5 text-[#087684]" />
                       {project.name}
                     </h3>
                     <DropdownMenu>
@@ -745,7 +758,7 @@ export default function Projects() {
                   </div>
                   <div className="space-y-4 ">
                     <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-gray-400" />
+                      <User className="w-4 h-4 text-[#087684]" />
                       <div>
                         <p className="text-sm text-gray-500">Holder</p>
                         <p className="text-gray-900 font-medium">{project.holder}</p>
@@ -753,18 +766,19 @@ export default function Projects() {
                     </div>
                     <div>
                       <p className="text-sm text-gray-500 flex items-center gap-2">
-                        <AlertCircle className="w-4 h-4" />
+                        <AlertCircle className="w-4 h-4 text-[#087684]" />
                         Status
                       </p>
                       <span
-                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium mt-1 ${project.status === 'ACTIVE'
-                            ? 'bg-green-100 text-green-800'
+                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium mt-1 ring-1 ring-inset ${
+                          project.status === 'ACTIVE'
+                            ? 'bg-green-50 text-green-700 ring-green-200'
                             : project.status === 'PLANNED'
-                              ? 'bg-blue-100 text-blue-800'
+                              ? 'bg-indigo-50 text-indigo-700 ring-indigo-200'
                               : project.status === 'CANCELLED'
-                                ? 'bg-red-100 text-red-800'
-                                : 'bg-purple-100 text-purple-800'
-                          }`}
+                                ? 'bg-rose-50 text-rose-700 ring-rose-200'
+                                : 'bg-emerald-50 text-emerald-700 ring-emerald-200'
+                        }`}
                       >
                         {project.status === 'ACTIVE' && <CheckCircle2 className="w-3 h-3" />}
                         {project.status === 'PLANNED' && <Clock className="w-3 h-3" />}
@@ -774,7 +788,7 @@ export default function Projects() {
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4 text-gray-400" />
+                      <DollarSign className="w-4 h-4 text-[#087684]" />
                       <div>
                         <p className="text-sm text-gray-500">Budget</p>
                         <p className="text-gray-900 font-medium">{project.budget}</p>
@@ -782,13 +796,13 @@ export default function Projects() {
                     </div>
                     {project.fileName && (
                       <div className="flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-gray-400" />
+                        <FileText className="w-4 h-4 text-[#087684]" />
                         <span className="text-sm text-gray-500 truncate">{project.fileName}</span>
                       </div>
                     )}
                     <div className="pt-2 border-t border-gray-100">
                       <p className="text-xs text-gray-500 flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
+                        <Calendar className="w-3 h-3 text-[#087684]" />
                         Created {project.createdAt ? new Date(project.createdAt).toLocaleDateString() : 'Unknown'}
                       </p>
                     </div>
@@ -916,6 +930,71 @@ export default function Projects() {
                       }
                       placeholder="Enter project description"
                       className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                      <FileText className="w-4 h-4" />
+                      Project File
+                    </label>
+                    {selectedProject.fileName ? (
+                      <div className="mt-2 flex items-center justify-between gap-2 p-2 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <FileText className="w-5 h-5 text-gray-400" />
+                          <span className="text-sm text-gray-900 truncate">{selectedProject.fileName}</span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {selectedProject.fileUrl && (
+                            <button
+                              type="button"
+                              onClick={() => selectedProject.fileUrl && selectedProject.fileName && handleFileDownload(selectedProject.fileUrl, selectedProject.fileName)}
+                              className="text-blue-600 hover:text-blue-700 text-sm"
+                              title="Download file"
+                            >
+                              Download
+                            </button>
+                          )}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => editFileInputRef.current?.click()}
+                            className="h-8 px-3"
+                          >
+                            Change
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setSelectedProject({ ...selectedProject, fileName: undefined, fileUrl: undefined })}
+                            className="h-8 px-3"
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => editFileInputRef.current?.click()}
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          Upload File
+                        </Button>
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      ref={editFileInputRef}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const fakeFileUrl = URL.createObjectURL(file);
+                        setSelectedProject({ ...selectedProject, fileName: file.name, fileUrl: fakeFileUrl });
+                      }}
+                      className="hidden"
+                      accept=".pdf,.doc,.docx,.txt"
                     />
                   </div>
                   <div className="flex justify-end space-x-2 pt-4 border-t border-gray-100">
