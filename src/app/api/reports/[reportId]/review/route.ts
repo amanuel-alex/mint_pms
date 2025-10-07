@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 
-export async function POST(request: Request, { params }: { params: Promise<{ reportId: string }> }) {
-  const { reportId } = await params;
+export async function POST(request: Request, contextPromise: Promise<{ params: { reportId: string } }>) {
+  const { params } = await contextPromise;
+  const reportId = params.reportId;
 
   try {
     const user = await getCurrentUser();

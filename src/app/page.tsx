@@ -144,7 +144,7 @@ export default function Home() {
           animateCounters();
         }
       },
-      { threshold: 0.5 }
+      { threshold: 0.2 }
     );
 
     if (statsRef.current) {
@@ -158,23 +158,28 @@ export default function Home() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const [adminRes, teamRes] = await Promise.all([
+        const [adminRes, usersRes, teamRes] = await Promise.all([
           fetch('/api/admin/stats', { cache: 'no-store' }),
+          fetch('/api/users', { cache: 'no-store' }),
           fetch('/api/team-members', { cache: 'no-store' })
         ]);
         const adminData = adminRes.ok ? await adminRes.json() : null;
+        const usersData = usersRes.ok ? await usersRes.json() : null;
         const teamData = teamRes.ok ? await teamRes.json() : [];
 
         const totalProjects = adminData?.totalProjects || 0;
-        const activeProjects = adminData?.projectCounts?.ACTIVE || 0;
+        // Count total users for clearer landing metric visibility
+        const totalUsers = Array.isArray(usersData?.users) ? usersData.users.length : 0;
+        // Keep these for success rate calculation
+        const activeProjects = (adminData?.projectCounts?.ACTIVE || 0) + (adminData?.projectCounts?.IN_PROGRESS || 0);
         const completedProjects = adminData?.projectCounts?.COMPLETED || 0;
         const teamMembers = Array.isArray(teamData) ? teamData.length : 0;
 
         const successRate = totalProjects > 0 ? Math.round((completedProjects / totalProjects) * 100) : 0;
 
         const updated = [
-          { label: 'Active Projects', value: activeProjects, suffix: '+' },
-          { label: 'Team Members', value: teamMembers, suffix: '+' },
+          { label: 'Projects', value: totalProjects, suffix: '+' },
+          { label: 'Users', value: totalUsers, suffix: '+' },
           { label: 'Success Rate', value: successRate, suffix: '%' },
           { label: 'Client Satisfaction', value: 4.9, suffix: '/5' }
         ];
@@ -346,7 +351,7 @@ export default function Home() {
                   className="bg-white p-8 rounded-2xl shadow-md border border-gray-100 hover:shadow-xl transition-all duration-300 hover:scale-105 cursor-pointer group"
                 >
                   <p className="text-4xl font-bold text-[#087684] mb-2 group-hover:text-[#065a66] transition-colors duration-300">
-                    {isVisible ? animatedStats[index] : 0}{stat.suffix}
+                    {isVisible ? animatedStats[index] : statsData[index].value}{stat.suffix}
                   </p>
                   <p className="text-gray-600 font-medium group-hover:text-gray-800 transition-colors duration-300">{stat.label}</p>
                 </div>

@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
   const budget = await prisma.budget.findUnique({
-    where: { id },
+    where: { id: params.id },
     include: { project: true },
   });
   if (!budget)
@@ -17,12 +18,11 @@ export async function GET(
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
   const data = await req.json();
   const budget = await prisma.budget.update({
-    where: { id },
+    where: { id: params.id },
     data: {
       ...data,
       date: new Date(data.date),
@@ -35,11 +35,8 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
-  await prisma.budget.delete({ where: { id } });
+  await prisma.budget.delete({ where: { id: params.id } });
   return NextResponse.json({ success: true });
 }
-
-

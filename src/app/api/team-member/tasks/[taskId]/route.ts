@@ -3,12 +3,12 @@ import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/serverAuth";
 import { NotificationType, TaskStatus } from "@prisma/client";
 
-export async function PATCH(request: Request, { params }: { params: Promise<{ taskId: string }> }) {
-  const { taskId } = await params;
+export async function PATCH(request: Request, { params }: { params: { taskId: string } }) {
   const user = await getCurrentUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  const { taskId } = params;
   const { status } = await request.json();
 
   // Only allow updating tasks assigned to the current user

@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/lib/serverAuth";
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ projectId: string; userId: string }> }
+  { params }: { params: { projectId: string; userId: string } }
 ) {
   try {
     const user = await getCurrentUser();
@@ -17,11 +17,9 @@ export async function DELETE(
     }
 
     // Verify the project exists and belongs to the current user
-    const { projectId, userId } = await params;
-
     const project = await prisma.project.findFirst({
       where: {
-        id: projectId,
+        id: params.projectId,
         holder: user.id
       }
     });
@@ -36,12 +34,12 @@ export async function DELETE(
     // Remove the team member
     const updatedProject = await prisma.project.update({
       where: {
-        id: projectId
+        id: params.projectId
       },
       data: {
         teamMembers: {
           disconnect: {
-            id: userId
+            id: params.userId
           }
         }
       },

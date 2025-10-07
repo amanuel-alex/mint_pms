@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/lib/serverAuth";
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ projectId: string }> }
+  { params }: { params: { projectId: string } }
 ) {
   try {
     const user = await getCurrentUser();

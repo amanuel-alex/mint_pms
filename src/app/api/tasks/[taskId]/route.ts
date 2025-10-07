@@ -4,14 +4,15 @@ import { getCurrentUser } from "@/lib/serverAuth";
 
 export async function PUT(
   request: Request,
-  { params }: { params: Promise<{ taskId: string }> }
+  { params }: { params: { taskId: string } }
 ) {
   try {
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const { taskId } = await params;
+
+    const taskId = params.taskId;
     if (!taskId) {
       return NextResponse.json(
         { error: "Task ID is required" },
@@ -77,14 +78,15 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ taskId: string }> }
+  { params }: { params: { taskId: string } }
 ) {
   try {
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const { taskId } = await params;
+
+    const taskId = params.taskId;
     if (!taskId) {
       return NextResponse.json(
         { error: "Task ID is required" },

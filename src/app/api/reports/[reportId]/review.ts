@@ -2,14 +2,14 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
 
-export async function POST(request: Request, { params }: { params: Promise<{ reportId: string }> }) {
+export async function POST(request: Request, { params }: { params: { reportId: string } }) {
   try {
     const user = await getCurrentUser();
     if (!user || user.role !== "PROJECT_MANAGER") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { reportId } = await params;
+    const { reportId } = params;
     const body = await request.json();
     const { action, comment } = body;
     if (!reportId || !["accept", "reject"].includes(action)) {

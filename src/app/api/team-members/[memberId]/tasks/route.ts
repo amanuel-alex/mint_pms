@@ -5,7 +5,7 @@ import { NotificationType } from "@prisma/client";
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ memberId: string }> }
+  { params }: { params: { memberId: string } }
 ) {
   try {
     const user = await getCurrentUser();
@@ -16,7 +16,8 @@ export async function GET(
         { status: 401 }
       );
     }
-    const { memberId } = await params;
+
+    const { memberId } = params;
 
     // Fetch all tasks assigned to this team member
     const tasks = await prisma.task.findMany({
@@ -52,7 +53,7 @@ export async function GET(
 
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ memberId: string }> }
+  { params }: { params: { memberId: string } }
 ) {
   try {
     const user = await getCurrentUser();
@@ -115,8 +116,9 @@ export async function POST(
     }
 
     console.log(`[TASK_ASSIGNMENT] Found task: ${task.title} in project: ${task.project.name}`);
+
     // Get the memberId from params
-    const { memberId } = await params;
+    const memberId = params.memberId;
 
     // Update the task with the assigned team member
     const updatedTask = await prisma.task.update({

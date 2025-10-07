@@ -5,7 +5,7 @@ import { getCurrentUser } from "@/lib/serverAuth";
 // GET /api/projects/[projectId]/tasks
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ projectId: string }> }
+  { params }: { params: { projectId: string } }
 ) {
   try {
     const user = await getCurrentUser();
@@ -63,7 +63,7 @@ export async function GET(
 // POST /api/projects/[projectId]/tasks
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ projectId: string }> }
+  { params }: { params: { projectId: string } }
 ) {
   try {
     const user = await getCurrentUser();

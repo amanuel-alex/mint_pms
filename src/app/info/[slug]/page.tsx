@@ -17,16 +17,15 @@ import {
 } from "lucide-react";
 
 type PageProps = {
-    params: Promise<{ slug: string }>;
+    params: { slug: string };
 };
 
 export function generateStaticParams() {
     return Object.keys(footerPages).map((slug) => ({ slug }));
 }
 
-export async function generateMetadata({ params }: PageProps) {
-    const { slug } = await params;
-    const page = footerPages[slug];
+export function generateMetadata({ params }: PageProps) {
+    const page = footerPages[params.slug];
     if (!page) return {};
     return {
         title: page.title,
@@ -34,9 +33,8 @@ export async function generateMetadata({ params }: PageProps) {
     };
 }
 
-export default async function InfoPage({ params }: PageProps) {
-    const { slug } = await params;
-    const page = footerPages[slug];
+export default function InfoPage({ params }: PageProps) {
+    const page = footerPages[params.slug];
     if (!page) notFound();
 
     const iconMap: Record<string, any> = {
@@ -54,7 +52,7 @@ export default async function InfoPage({ params }: PageProps) {
         cookies: Cookie
     };
 
-    const Icon = iconMap[slug] ?? Info;
+    const Icon = iconMap[params.slug] ?? Info;
     const navItems = Object.entries(footerPages).map(([slug, meta]) => ({ slug, title: meta.title }));
 
     return (
@@ -85,7 +83,7 @@ export default async function InfoPage({ params }: PageProps) {
                                 key={item.slug}
                                 href={`/info/${item.slug}`}
                                 className={`block px-4 py-3 rounded-xl border transition-all ${
-                                    item.slug === slug
+                                    item.slug === params.slug
                                         ? "bg-white border-[#087684]/30 text-[#087684] shadow"
                                         : "bg-white/70 hover:bg-white border-gray-200 text-gray-700 hover:shadow"
                                 }`}
